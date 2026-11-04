@@ -1,0 +1,31 @@
+name: Compilar APK
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.9
+      - name: Acomodar archivos
+        run: |
+          mkdir -p app/src/main/java/com/extractor/universal app/src/main/res/layout app/src/main/res/values
+          mv app-build.gradle.kts app/build.gradle.kts
+          mv AndroidManifest.xml app/src/main/AndroidManifest.xml
+          mv MainActivity.kt Extractor.kt app/src/main/java/com/extractor/universal/
+          mv activity_main.xml app/src/main/res/layout/
+          mv strings.xml app/src/main/res/values/
+      - name: Compilar
+        run: gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: extractor-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
